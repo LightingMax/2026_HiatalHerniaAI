@@ -29,3 +29,4 @@
 - Windows 首次启动较慢（会先解压运行时环境）。
 - 本项目将 `torch==2.8.0`、`torchvision==0.23.0` 固定为 CPU 轮子，减少 Windows DLL 初始化失败概率。
 - 如果出现 `invalid load key, 'v'`，通常是打包到了 Git LFS 指针文件（不是实际 `.pth`）。请确保构建前已执行 `git lfs pull`。
+- 如果出现 `failed finding central directory`，通常是 `.pth` 文件损坏或传输不完整，请用原始权重重新覆盖后再构建。

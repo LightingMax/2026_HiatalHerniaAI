@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import warnings
+import zipfile
 
 if sys.platform == "win32" and hasattr(sys, "_MEIPASS"):
     # Help Windows loader find torch native DLLs in frozen app runtime dir.
@@ -92,6 +93,16 @@ class HerniaAIEngine:
                 "检测到模型文件是 Git LFS 指针而非真实权重文件。"
                 "请在构建环境执行 git lfs pull，或确保将真实 .pth 文件打包进 EXE。"
             )
+        if head.startswith(b"PK"):
+            try:
+                with zipfile.ZipFile(model_path, "r") as zf:
+                    # Trigger central-directory parsing and basic member listing.
+                    _ = zf.namelist()
+            except zipfile.BadZipFile as e:
+                raise RuntimeError(
+                    "模型权重文件已损坏或未完整下载（ZIP中央目录缺失）。"
+                    "请重新获取原始 .pth 文件并替换后再打包。"
+                ) from e
 
         checkpoint = None
         try:
