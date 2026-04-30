@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules
 
 project_dir = Path.cwd()
 
@@ -11,6 +12,9 @@ candidate_weights = [
 ]
 
 datas = [(str(p), ".") for p in candidate_weights if p.exists()]
+datas += collect_data_files("timm")
+binaries = collect_dynamic_libs("torch")
+hiddenimports = collect_submodules("timm")
 
 icon_file = project_dir / "app_icon.ico"
 icon_arg = str(icon_file) if icon_file.exists() else None
@@ -21,9 +25,9 @@ block_cipher = None
 a = Analysis(
     ['liekongshanapp.py'],
     pathex=[str(project_dir)],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
-    hiddenimports=['timm', 'torchvision'],
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -46,7 +50,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,

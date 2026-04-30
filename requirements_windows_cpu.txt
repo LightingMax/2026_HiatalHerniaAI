@@ -1,13 +1,11 @@
-# Windows CPU build dependencies
-# Install with:
-#   python -m pip install -r requirements_windows_cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu
+# Windows CPU build dependencies (non-torch)
+# Torch is installed separately with pinned version in build scripts:
+#   torch==2.8.0 / torchvision==0.23.0 (CPU wheels)
 
 numpy
 pandas
 Pillow
 timm
-torch
-torchvision
 openpyxl
 PyQt5
 pyinstaller

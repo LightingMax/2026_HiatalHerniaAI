@@ -3,6 +3,12 @@ import os
 import sys
 import time
 
+if sys.platform == "win32" and hasattr(sys, "_MEIPASS"):
+    # Help Windows loader find torch native DLLs in frozen app runtime dir.
+    torch_lib_dir = os.path.join(sys._MEIPASS, "torch", "lib")
+    if os.path.isdir(torch_lib_dir):
+        os.add_dll_directory(torch_lib_dir)
+
 import pandas as pd
 import timm
 import torch
