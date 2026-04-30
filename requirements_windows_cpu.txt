@@ -1,0 +1,13 @@
+# Windows CPU build dependencies
+# Install with:
+#   python -m pip install -r requirements_windows_cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+numpy
+pandas
+Pillow
+timm
+torch
+torchvision
+openpyxl
+PyQt5
+pyinstaller
