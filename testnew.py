@@ -1,5 +1,6 @@
 import os
 import random
+import warnings
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
@@ -145,8 +146,24 @@ def evaluate_model(ckpt_path, rule, num_classes):
     if torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
 
-    # 安全加载权重 (兼容带有 module. 前缀的权重文件)
-    state_dict = torch.load(ckpt_path, map_location=DEVICE)
+    # 安全加载权重：先尝试 weights_only=True，失败后对可信文件回退
+    try:
+        state_dict = torch.load(ckpt_path, map_location=DEVICE, weights_only=True)
+    except TypeError:
+        state_dict = torch.load(ckpt_path, map_location=DEVICE)
+    except Exception as safe_err:
+        warnings.warn(
+            "weights_only=True 加载失败，正在回退到 weights_only=False。"
+            f"仅在权重来源可信时可使用。原始错误: {safe_err}"
+        )
+        state_dict = torch.load(ckpt_path, map_location=DEVICE, weights_only=False)
+
+    if isinstance(state_dict, dict):
+        for key in ("state_dict", "model_state_dict", "model", "net"):
+            if key in state_dict and isinstance(state_dict[key], dict):
+                state_dict = state_dict[key]
+                break
+
     if torch.cuda.device_count() == 1 and list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
     model.load_state_dict(state_dict)

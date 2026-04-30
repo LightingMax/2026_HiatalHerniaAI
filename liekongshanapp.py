@@ -2,6 +2,7 @@ import multiprocessing
 import os
 import sys
 import time
+import warnings
 
 if sys.platform == "win32" and hasattr(sys, "_MEIPASS"):
     # Help Windows loader find torch native DLLs in frozen app runtime dir.
@@ -70,16 +71,44 @@ class HerniaAIEngine:
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"找不到模型权重文件: {model_path}")
 
-        state_dict = torch.load(model_path, map_location=self.device)
-
-        if isinstance(state_dict, dict) and "state_dict" in state_dict:
-            state_dict = state_dict["state_dict"]
+        state_dict = self._safe_load_state_dict(model_path)
 
         if list(state_dict.keys())[0].startswith("module."):
             state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
 
         self.model.load_state_dict(state_dict)
         self.model.eval()
+
+    def _safe_load_state_dict(self, model_path):
+        """
+        Try secure loading first (weights_only=True). If checkpoint format is not
+        compatible and the file is trusted, fallback to weights_only=False.
+        """
+        checkpoint = None
+        try:
+            checkpoint = torch.load(model_path, map_location=self.device, weights_only=True)
+        except TypeError:
+            # Backward compatibility with very old torch versions
+            checkpoint = torch.load(model_path, map_location=self.device)
+        except Exception as safe_err:
+            warnings.warn(
+                "Safe checkpoint load failed (weights_only=True). "
+                "Falling back to weights_only=False for trusted local model file only. "
+                f"Original error: {safe_err}"
+            )
+            checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
+
+        # Common checkpoint structures
+        if isinstance(checkpoint, dict):
+            for key in ("state_dict", "model_state_dict", "model", "net"):
+                if key in checkpoint and isinstance(checkpoint[key], dict):
+                    checkpoint = checkpoint[key]
+                    break
+
+        if not isinstance(checkpoint, dict):
+            raise RuntimeError("模型文件格式无法解析为 state_dict，请检查权重文件来源与格式。")
+
+        return checkpoint
 
     def predict(self, img_path):
         try:
