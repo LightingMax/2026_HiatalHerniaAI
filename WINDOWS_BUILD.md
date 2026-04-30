@@ -28,3 +28,4 @@
 - 在 macOS 直接运行 `pyinstaller` 只能产出 macOS 可执行文件，不能原生产出 Windows `exe`。
 - Windows 首次启动较慢（会先解压运行时环境）。
 - 本项目将 `torch==2.8.0`、`torchvision==0.23.0` 固定为 CPU 轮子，减少 Windows DLL 初始化失败概率。
+- 如果出现 `invalid load key, 'v'`，通常是打包到了 Git LFS 指针文件（不是实际 `.pth`）。请确保构建前已执行 `git lfs pull`。

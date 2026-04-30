@@ -84,6 +84,15 @@ class HerniaAIEngine:
         Try secure loading first (weights_only=True). If checkpoint format is not
         compatible and the file is trusted, fallback to weights_only=False.
         """
+        # Detect Git LFS pointer file early (common cause of "invalid load key, 'v'")
+        with open(model_path, "rb") as f:
+            head = f.read(200)
+        if head.startswith(b"version https://git-lfs.github.com/spec/v1"):
+            raise RuntimeError(
+                "检测到模型文件是 Git LFS 指针而非真实权重文件。"
+                "请在构建环境执行 git lfs pull，或确保将真实 .pth 文件打包进 EXE。"
+            )
+
         checkpoint = None
         try:
             checkpoint = torch.load(model_path, map_location=self.device, weights_only=True)
