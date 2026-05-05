@@ -21,7 +21,7 @@
 
 `liekongshanapp.spec` 会自动把下面模型文件一起打包（若文件存在）：
 - `best_model_liekongshan.pth`
-- `best_model_liekongshan_2classes_0.pth`
+- `best_model_liekongshan_2classes.pth`
 
 ## 4) 注意事项
 

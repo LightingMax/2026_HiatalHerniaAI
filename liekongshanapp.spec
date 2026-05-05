@@ -8,7 +8,7 @@ project_dir = Path.cwd()
 # Pack both weights if present
 candidate_weights = [
     project_dir / "best_model_liekongshan.pth",
-    project_dir / "best_model_liekongshan_2classes_0.pth",
+    project_dir / "best_model_liekongshan_2classes.pth",
 ]
 
 datas = [(str(p), ".") for p in candidate_weights if p.exists()]
